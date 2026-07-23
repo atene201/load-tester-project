@@ -1,0 +1,6 @@
+# Compiled binaries
+/bin/
+*.exe
+
+# OS files
+.DS_Store
