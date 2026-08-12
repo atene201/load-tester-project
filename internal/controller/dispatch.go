@@ -114,18 +114,3 @@ func Summarize(results []workerResult) Summary {
 	}
 	return s
 }
-
-// PrintReport prints a human-readable summary to stdout.
-func PrintReport(s Summary) {
-	fmt.Printf("Workers: %d total, %d responded, %d failed\n",
-		s.TotalWorkers, s.RespondedCount, len(s.FailedWorkers))
-	for _, f := range s.FailedWorkers {
-		fmt.Printf("  FAILED: %s\n", f)
-	}
-	fmt.Printf("Total requests: %d\n", s.TotalRequests)
-	fmt.Printf("Successes: %d\n", s.TotalSuccesses)
-	fmt.Printf("Failures: %d\n", s.TotalFailures)
-	if s.TotalRequests > 0 {
-		fmt.Printf("Weighted avg latency: %.2fms\n", s.AvgLatencyMs)
-	}
-}
