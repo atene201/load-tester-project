@@ -2,27 +2,24 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
 	"strings"
 	"time"
 
 	"loadtester/internal/controller"
-	"loadtester/internal/protocol"
 )
 
 func main() {
 	workersFlag := flag.String("workers", "localhost:9000", "comma-separated worker addresses")
-	targetURL := flag.String("url", "http://localhost:8080", "URL to load test")
-	numRequests := flag.Int("n", 100, "requests PER WORKER")
+	port := flag.String("port", "8090", "port to serve the WebSocket on")
 	flag.Parse()
 
 	addresses := strings.Split(*workersFlag, ",")
+	srv := controller.NewServer(addresses, 10*time.Second)
 
-	// Give workers a buffer to receive the command before the coordinated start.
-	startAt := time.Now().Add(2 * time.Second)
-	req := protocol.TestRequest{URL: *targetURL, NumRequests: *numRequests, StartAt: startAt}
-	timeout := 10 * time.Second // must exceed the 2s buffer + expected test duration
+	http.HandleFunc("/ws", srv.HandleWS)
 
-	results := controller.CallWorkers(addresses, req, timeout)
-	summary := controller.Summarize(results)
-	controller.PrintReport(summary)
+	log.Printf("controller listening on :%s", *port)
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
