@@ -10,6 +10,7 @@ const (
 	EventResponseReceived EventType = "response_received"
 	EventWorkerFailed     EventType = "worker_failed"
 	EventRunComplete      EventType = "run_complete"
+	EventSummary 		  EventType = "summary"
 )
 
 type Event struct {
@@ -17,4 +18,5 @@ type Event struct {
 	Worker    string    `json:"worker,omitempty"`
 	Timestamp time.Time `json:"timestamp"`
 	Detail    string    `json:"detail,omitempty"`
+	Summary   *Summary  `json:"summary,omitempty"`
 }

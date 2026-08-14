@@ -18,17 +18,6 @@ type workerResult struct {
 	err     error
 }
 
-// Summary is the aggregated result across all workers.
-type Summary struct {
-	TotalWorkers   int
-	RespondedCount int
-	FailedWorkers  []string
-	TotalRequests  int
-	TotalSuccesses int
-	TotalFailures  int
-	AvgLatencyMs   float64
-}
-
 func callWorker(address string, req protocol.TestRequest, timeout time.Duration, events chan<- protocol.Event) workerResult {
 	body, _ := json.Marshal(req)
 	client := &http.Client{Timeout: timeout}
@@ -89,12 +78,14 @@ func CallWorkers(addresses []string, req protocol.TestRequest, timeout time.Dura
 	wg.Wait()
 
 	events <- protocol.Event{Type: protocol.EventRunComplete, Timestamp: time.Now()}
+	summary := Summarize(results)
+	events <- protocol.Event{Type: protocol.EventSummary, Timestamp: time.Now(), Summary: &summary}
 	return results
 }
 
 // Summarize aggregates raw worker results into a Summary. Pure function — no I/O.
-func Summarize(results []workerResult) Summary {
-	s := Summary{TotalWorkers: len(results)}
+func Summarize(results []workerResult) protocol.Summary {
+	s := protocol.Summary{TotalWorkers: len(results)}
 	var weightedLatencySum float64
 
 	for _, r := range results {
