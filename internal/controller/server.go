@@ -43,7 +43,7 @@ func (s *Server) HandleWS(w http.ResponseWriter, r *http.Request) {
 	}
 	req.StartAt = time.Now().Add(2 * time.Second)
 
-	events := make(chan protocol.Event, 100)
+	events := make(chan protocol.Event, 100) // channel (bi-directional)
 
 	go func() {
 		CallWorkers(s.addresses, req, s.timeout, events)

@@ -70,7 +70,7 @@ func callWorker(address string, req protocol.TestRequest, timeout time.Duration,
 	return workerResult{address: address, resp: resp}
 }
 
-// CallWorkers dispatches req to every address concurrently, emitting events
+// CallWorkers dispatches TestRequests to every address (address of a worker) concurrently, emitting events
 // to the provided channel as each step happens. Caller owns events; CallWorkers
 // only sends to it, never closes it (multiple goroutines write concurrently).
 func CallWorkers(addresses []string, req protocol.TestRequest, timeout time.Duration, events chan<- protocol.Event) []workerResult {

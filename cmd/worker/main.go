@@ -26,7 +26,7 @@ func handleRun(w http.ResponseWriter, r *http.Request) {
 	summary := loadtest.Summarize(results)
 
 	resp := protocol.TestResponse{
-		Total:      summary.Total,
+		Total:      	summary.Total,
 		Successes:  	summary.Successes,
 		Failures:   	summary.Failures,
 		AvgLatencyMs: float64(summary.AvgLatency.Milliseconds()),
