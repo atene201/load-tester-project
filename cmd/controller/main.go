@@ -1,25 +1,38 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
-	"loadtester/internal/controller"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
+
+	"loadtester/internal/protocol"
 )
 
 func main() {
-	workersFlag := flag.String("workers", "localhost:9000", "comma-separated worker addresses")
-	port := flag.String("port", "8090", "port to serve the WebSocket on")
-	flag.Parse()
+	server := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := websocket.Accept(w, r, nil)
+		if err != nil {
+			log.Printf("failed to accept websocket connection: %v", err)
+		}
+		defer c.CloseNow()
 
-	addresses := strings.Split(*workersFlag, ",")
-	srv := controller.NewServer(addresses, 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
 
-	http.HandleFunc("/ws", srv.HandleWS)
+		var v protocol.Event
+		err = wsjson.Read(ctx, c, &v)
+		if err != nil {
+			log.Printf("failed to read from websocket: %v", err)
+		}
 
-	log.Printf("controller listening on :%s", *port)
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+		log.Printf("received: %v", v)
+
+		c.Close(websocket.StatusNormalClosure, "")
+	})
+	log.Println("controller listening on :8090")
+	log.Fatal(http.ListenAndServe(":8090", server))
 }
