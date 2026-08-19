@@ -9,6 +9,7 @@ import (
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 
+	"loadtester/internal/controller"
 	"loadtester/internal/protocol"
 )
 
@@ -22,16 +23,40 @@ func main() {
 		}
 		defer c.CloseNow()
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
+		readCtx, readCancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer readCancel()
 
-		var v protocol.Event
-		err = wsjson.Read(ctx, c, &v)
+		var event protocol.Event
+		err = wsjson.Read(readCtx, c, &event)
 		if err != nil {
 			log.Printf("failed to read from websocket: %v", err)
 		}
 
-		log.Printf("received: %v", v)
+		addresses := []string{"localhost:9000", "localhost:9001", "localhost:9002"} // hardcoded for now but the frontend should send this value
+
+		tr := protocol.TrafficRequest{
+			URL:         "http://localhost:8080", // target url
+			NumRequests: 100,                     // hardcoded for now but the frontend should send this value
+			StartAt:     time.Now().Add(time.Second * 2),
+		}
+
+		workCtx, workCancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer workCancel()
+
+		events := make(chan protocol.Event)
+
+		go func() {
+			defer close(events)
+			controller.CallWorkers(addresses, tr, time.Second*5, events)
+		}()
+
+		for event := range events {
+			err := wsjson.Write(workCtx, c, event)
+			if err != nil {
+				log.Printf("failed to write to websocket: %v", err)
+				return
+			}
+		}
 
 		c.Close(websocket.StatusNormalClosure, "")
 	})
