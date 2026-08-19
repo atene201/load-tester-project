@@ -36,14 +36,14 @@ func main() {
 
 		tr := protocol.TrafficRequest{
 			URL:         "http://localhost:8080", // target url
-			NumRequests: 100,                     // hardcoded for now but the frontend should send this value
+			NumRequests: event.NumRequests,
 			StartAt:     time.Now().Add(time.Second * 2),
 		}
 
 		workCtx, workCancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer workCancel()
 
-		events := make(chan protocol.Event)
+		events := make(chan protocol.Event, 50) // unbounded channel
 
 		go func() {
 			defer close(events)

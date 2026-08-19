@@ -14,9 +14,10 @@ const (
 )
 
 type Event struct {
-	Type      EventType `json:"type"`
-	Worker    string    `json:"worker,omitempty"`
-	Timestamp time.Time `json:"timestamp"`
-	Detail    string    `json:"detail,omitempty"`
-	Summary   *Summary  `json:"summary,omitempty"`
+	Type        EventType `json:"type"`
+	NumRequests int       `json:"num_requests,omitempty"`
+	Worker      string    `json:"worker,omitempty"`
+	Timestamp   time.Time `json:"timestamp"`
+	Detail      string    `json:"detail,omitempty"`
+	Summary     *Summary  `json:"summary,omitempty"`
 }
