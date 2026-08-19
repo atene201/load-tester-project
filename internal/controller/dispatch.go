@@ -14,11 +14,11 @@ import (
 // workerResult tracks one worker's outcome, success or failure.
 type workerResult struct {
 	address string
-	resp    protocol.TestResponse
+	resp    protocol.TrafficResponse
 	err     error
 }
 
-func callWorker(address string, req protocol.TestRequest, timeout time.Duration, events chan<- protocol.Event) workerResult {
+func callWorker(address string, req protocol.TrafficRequest, timeout time.Duration, events chan<- protocol.Event) workerResult {
 	body, _ := json.Marshal(req)
 	client := &http.Client{Timeout: timeout}
 
@@ -40,7 +40,7 @@ func callWorker(address string, req protocol.TestRequest, timeout time.Duration,
 	}
 	defer httpResp.Body.Close()
 
-	var resp protocol.TestResponse
+	var resp protocol.TrafficResponse
 	if err := json.NewDecoder(httpResp.Body).Decode(&resp); err != nil {
 		events <- protocol.Event{
 			Type:      protocol.EventWorkerFailed,
@@ -62,7 +62,7 @@ func callWorker(address string, req protocol.TestRequest, timeout time.Duration,
 // CallWorkers dispatches TestRequests to every address (address of a worker) concurrently, emitting events
 // to the provided channel as each step happens. Caller owns events; CallWorkers
 // only sends to it, never closes it (multiple goroutines write concurrently).
-func CallWorkers(addresses []string, req protocol.TestRequest, timeout time.Duration, events chan<- protocol.Event) []workerResult {
+func CallWorkers(addresses []string, req protocol.TrafficRequest, timeout time.Duration, events chan<- protocol.Event) []workerResult {
 	events <- protocol.Event{Type: protocol.EventDispatchStart, Timestamp: time.Now()}
 
 	results := make([]workerResult, len(addresses))
