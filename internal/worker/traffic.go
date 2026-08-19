@@ -1,4 +1,4 @@
-package loadtest
+package worker
 
 import (
 	"net/http"
@@ -13,23 +13,23 @@ type RequestResult struct {
 }
 
 type Summary struct {
-	Total 		int 
-	Successes   int
-	Failures 	int
-	AvgLatency 	time.Duration
+	Total      int
+	Successes  int
+	Failures   int
+	AvgLatency time.Duration
 }
 
 func Summarize(results []RequestResult) Summary {
 	var successCount int
 	var totalDuration time.Duration
-	
+
 	for _, r := range results {
 		if r.Success {
 			successCount++
 		}
 		totalDuration += r.Duration
 	}
-	
+
 	avgLatency := time.Duration(0)
 	if len(results) > 0 {
 		avgLatency = totalDuration / time.Duration(len(results))
