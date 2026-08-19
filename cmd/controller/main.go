@@ -14,7 +14,9 @@ import (
 
 func main() {
 	server := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := websocket.Accept(w, r, nil)
+		c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+			InsecureSkipVerify: true, // only for dev purposes
+		})
 		if err != nil {
 			log.Printf("failed to accept websocket connection: %v", err)
 		}
