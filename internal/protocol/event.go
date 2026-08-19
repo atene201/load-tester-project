@@ -10,7 +10,7 @@ const (
 	EventResponseReceived EventType = "response_received"
 	EventWorkerFailed     EventType = "worker_failed"
 	EventRunComplete      EventType = "run_complete"
-	EventSummary 		  EventType = "summary"
+	EventSummary          EventType = "summary"
 )
 
 type Event struct {
